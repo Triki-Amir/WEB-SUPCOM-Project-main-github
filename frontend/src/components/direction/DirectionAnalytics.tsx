@@ -8,9 +8,20 @@ import { TrendingUp, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import api from "../../services/api";
 
+interface BookingTrend {
+  date: string;
+  count: number;
+}
+
+interface VehiclePerformance {
+  vehicleName: string;
+  bookingsCount: number;
+  revenue: number;
+}
+
 export function DirectionAnalytics() {
-  const [bookingTrends, setBookingTrends] = useState<any[]>([]);
-  const [vehiclePerformance, setVehiclePerformance] = useState<any[]>([]);
+  const [bookingTrends, setBookingTrends] = useState<BookingTrend[]>([]);
+  const [vehiclePerformance, setVehiclePerformance] = useState<VehiclePerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState("30");
 

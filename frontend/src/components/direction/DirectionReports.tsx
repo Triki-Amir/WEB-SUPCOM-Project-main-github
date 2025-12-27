@@ -7,6 +7,19 @@ import { FileText, Download, Calendar, TrendingUp, Loader2 } from "lucide-react"
 import { toast } from "sonner";
 import api from "../../services/api";
 
+interface StationStats {
+  name: string;
+  city: string;
+  bookingsCount: number;
+  revenue?: number;
+}
+
+interface UserStats {
+  totalUsers: number;
+  activeClients: number;
+  newThisMonth: number;
+}
+
 interface Report {
   id: string;
   title: string;
@@ -18,8 +31,8 @@ interface Report {
 }
 
 export function DirectionReports() {
-  const [stationStats, setStationStats] = useState<any[]>([]);
-  const [userStats, setUserStats] = useState<any>(null);
+  const [stationStats, setStationStats] = useState<StationStats[]>([]);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -79,6 +79,13 @@ export function AdminMaintenance() {
       return;
     }
 
+    // Validate date
+    const date = new Date(scheduledAt);
+    if (isNaN(date.getTime())) {
+      toast.error("Date invalide");
+      return;
+    }
+
     try {
       setSubmitting(true);
       await api.maintenance.create({
@@ -86,7 +93,7 @@ export function AdminMaintenance() {
         type,
         description,
         cost: cost ? parseFloat(cost) : undefined,
-        scheduledAt: new Date(scheduledAt).toISOString(),
+        scheduledAt: date.toISOString(),
         notes: notes || undefined,
       });
       toast.success("Maintenance planifiée avec succès");

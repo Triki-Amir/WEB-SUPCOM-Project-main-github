@@ -55,6 +55,19 @@ export function BookingDialog({ open, onClose, vehicle, onConfirm }: BookingDial
       return;
     }
 
+    // Validate dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      toast.error("Dates invalides");
+      return;
+    }
+
+    if (start >= end) {
+      toast.error("La date de fin doit être après la date de début");
+      return;
+    }
+
     if (!vehicle.stationId) {
       toast.error("Station non définie pour ce véhicule");
       return;
@@ -65,8 +78,8 @@ export function BookingDialog({ open, onClose, vehicle, onConfirm }: BookingDial
       await api.bookings.create({
         vehicleId: vehicle.id,
         stationId: vehicle.stationId,
-        startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
+        startDate: start.toISOString(),
+        endDate: end.toISOString(),
         totalPrice,
         pickupLocation: pickupLocation || undefined,
         dropoffLocation: dropoffLocation || undefined,
