@@ -1,21 +1,45 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
 import { LineChart, Line, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { TrendingUp, Download } from "lucide-react";
+import { TrendingUp, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import api from "../../services/api";
 
 export function DirectionAnalytics() {
-  const yearlyTrend = [
-    { month: "Jan", revenue: 45000, bookings: 320, customers: 2320 },
-    { month: "Fév", revenue: 52000, bookings: 380, customers: 2410 },
-    { month: "Mar", revenue: 48000, bookings: 350, customers: 2505 },
-    { month: "Avr", revenue: 61000, bookings: 420, customers: 2645 },
-    { month: "Mai", revenue: 55000, bookings: 390, customers: 2721 },
-    { month: "Juin", revenue: 67340, bookings: 450, customers: 2845 },
-  ];
+  const [bookingTrends, setBookingTrends] = useState<any[]>([]);
+  const [vehiclePerformance, setVehiclePerformance] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState("30");
 
+  useEffect(() => {
+    loadAnalyticsData();
+  }, [period]);
+
+  const loadAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      const [trendsData, performanceData] = await Promise.all([
+        api.analytics.getBookingTrends(parseInt(period)),
+        api.analytics.getVehiclePerformance()
+      ]);
+      setBookingTrends(trendsData);
+      setVehiclePerformance(performanceData);
+    } catch (error) {
+      console.error("Error loading analytics:", error);
+      toast.error("Erreur lors du chargement des analyses");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExportData = () => {
+    toast.success("Export des données en cours...");
+  };
+
+  // Static data for demo purposes
   const categoryRevenue = [
     { category: "Compacte", revenue: 18500, percentage: 27.5 },
     { category: "Berline", revenue: 22340, percentage: 33.2 },
@@ -46,20 +70,41 @@ export function DirectionAnalytics() {
     { day: "Dim", bookings: 82 },
   ];
 
-  const handleExportData = () => {
-    toast.success("Export des données en cours...");
-  };
-
   const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Select defaultValue="6months">
+          <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">7 jours</SelectItem>
+              <SelectItem value="30">30 jours</SelectItem>
+              <SelectItem value="90">3 mois</SelectItem>
+              <SelectItem value="180">6 mois</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button variant="outline" onClick={handleExportData}>
+          <Download className="w-4 h-4 mr-2" />
+          Exporter les données
+        </Button>
+      </div>
+
+      <Tabs defaultValue="bookings">
+        <TabsList>
+          <TabsTrigger value="bookings">Réservations</TabsTrigger>
             <SelectContent>
               <SelectItem value="1month">1 mois</SelectItem>
               <SelectItem value="3months">3 mois</SelectItem>
