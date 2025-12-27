@@ -105,30 +105,66 @@ export function DirectionAnalytics() {
       <Tabs defaultValue="bookings">
         <TabsList>
           <TabsTrigger value="bookings">Réservations</TabsTrigger>
-            <SelectContent>
-              <SelectItem value="1month">1 mois</SelectItem>
-              <SelectItem value="3months">3 mois</SelectItem>
-              <SelectItem value="6months">6 mois</SelectItem>
-              <SelectItem value="1year">1 an</SelectItem>
-              <SelectItem value="all">Tout</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button variant="outline" onClick={handleExportData}>
-          <Download className="w-4 h-4 mr-2" />
-          Exporter les données
-        </Button>
-      </div>
-
-      <Tabs defaultValue="revenue">
-        <TabsList>
-          <TabsTrigger value="revenue">Revenu</TabsTrigger>
-          <TabsTrigger value="bookings">Réservations</TabsTrigger>
-          <TabsTrigger value="customers">Clients</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
+          <TabsTrigger value="segments">Segments</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="revenue" className="space-y-6 mt-6">
+        <TabsContent value="bookings" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tendances des réservations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {bookingTrends.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <LineChart data={bookingTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#3b82f6"
+                      strokeWidth={2}
+                      name="Réservations"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center py-8 text-gray-500">Aucune donnée disponible</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Performance des véhicules</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {vehiclePerformance.length > 0 ? (
+                <ResponsiveContainer width="100%" height={350}>
+                  <BarChart data={vehiclePerformance}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="vehicleName" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="bookingsCount" fill="#3b82f6" name="Réservations" />
+                    <Bar dataKey="revenue" fill="#10b981" name="Revenu (TND)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className="text-center py-8 text-gray-500">Aucune donnée disponible</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="segments" className="space-y-6 mt-6">
           <div className="grid lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>

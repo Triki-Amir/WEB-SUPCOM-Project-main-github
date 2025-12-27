@@ -96,9 +96,6 @@ export function AdminUsers() {
       </div>
     );
   }
-    const { label, variant } = variants[status as keyof typeof variants];
-    return <Badge variant={variant}>{label}</Badge>;
-  };
 
   return (
     <div className="space-y-6">
