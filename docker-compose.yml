@@ -1,0 +1,17 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: car-rental-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: car_rental_db
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persist data even if container is stopped
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
