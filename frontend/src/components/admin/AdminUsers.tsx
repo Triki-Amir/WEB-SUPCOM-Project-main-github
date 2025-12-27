@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -7,97 +7,95 @@ import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "../ui/dialog";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { User, Mail, Phone, Shield, Plus, Edit } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
+import { User, Mail, Phone, Shield, Plus, Edit, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import api from "../../services/api";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 interface UserAccount {
   id: string;
   name: string;
   email: string;
-  phone: string;
-  role: "client" | "operator" | "support";
-  status: "active" | "suspended";
-  joinDate: string;
+  phone?: string;
+  address?: string;
+  role: string;
+  createdAt: string;
 }
 
 export function AdminUsers() {
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [users, setUsers] = useState<UserAccount[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserAccount | null>(null);
+  const [selectedRole, setSelectedRole] = useState("");
 
-  const users: UserAccount[] = [
-    {
-      id: "1",
-      name: "Ahmed Ben Ali",
-      email: "ahmed.benali@email.com",
-      phone: "+216 20 123 456",
-      role: "client",
-      status: "active",
-      joinDate: "15 Jan 2025",
-    },
-    {
-      id: "2",
-      name: "Leila Trabelsi",
-      email: "leila.trabelsi@email.com",
-      phone: "+216 21 234 567",
-      role: "client",
-      status: "active",
-      joinDate: "3 Feb 2025",
-    },
-    {
-      id: "3",
-      name: "Karim Mansouri",
-      email: "karim.mansouri@drivehub.tn",
-      phone: "+216 22 345 678",
-      role: "operator",
-      status: "active",
-      joinDate: "10 Dec 2024",
-    },
-    {
-      id: "4",
-      name: "Sami Bouazizi",
-      email: "sami.bouazizi@drivehub.tn",
-      phone: "+216 23 456 789",
-      role: "support",
-      status: "active",
-      joinDate: "5 Nov 2024",
-    },
-  ];
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
-  const handleAddUser = () => {
-    toast.success("Utilisateur ajouté avec succès");
-    setAddDialogOpen(false);
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await api.users.getAll();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error loading users:", error);
+      toast.error("Erreur lors du chargement des utilisateurs");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditUser = (user: UserAccount) => {
     setSelectedUser(user);
+    setSelectedRole(user.role);
     setEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
-    toast.success("Utilisateur mis à jour");
-    setEditDialogOpen(false);
+  const handleSaveEdit = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await api.users.updateRole(selectedUser.id, selectedRole);
+      toast.success("Rôle de l'utilisateur mis à jour");
+      setEditDialogOpen(false);
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error updating user role:", error);
+      toast.error(error.message || "Erreur lors de la mise à jour");
+    }
   };
 
-  const handleSuspendUser = (userId: string) => {
-    toast.success("Utilisateur suspendu");
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await api.users.delete(userId);
+      toast.success("Utilisateur supprimé");
+      loadUsers();
+    } catch (error: any) {
+      console.error("Error deleting user:", error);
+      toast.error(error.message || "Erreur lors de la suppression");
+    }
   };
 
   const getRoleBadge = (role: string) => {
-    const variants = {
-      client: { label: "Client", variant: "secondary" as const },
-      operator: { label: "Opérateur", variant: "default" as const },
-      support: { label: "Support", variant: "default" as const },
+    const roleMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
+      CLIENT: { label: "Client", variant: "secondary" },
+      ADMIN: { label: "Admin", variant: "default" },
+      DIRECTION: { label: "Direction", variant: "default" },
     };
-    const { label, variant } = variants[role as keyof typeof variants];
+    const { label, variant } = roleMap[role] || { label: role, variant: "secondary" as const };
     return <Badge variant={variant}>{label}</Badge>;
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      active: { label: "Actif", variant: "default" as const },
-      suspended: { label: "Suspendu", variant: "destructive" as const },
-    };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
     const { label, variant } = variants[status as keyof typeof variants];
     return <Badge variant={variant}>{label}</Badge>;
   };
